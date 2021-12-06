@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification
+	xmlns="https://github.com/vqmod/vqmod"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://github.com/vqmod/vqmod https://raw.githubusercontent.com/vqmod/vqmod/master/vqmod.xsd"
+	>
+	<id><![CDATA[[VQMOD] Journal3: Use "SEO Mega KIT PLUS Manufacturer Description" and show it in manufacturer's page]]></id>
+	<version>0.1.0</version>
+	<vqmver>2.6.6</vqmver>
+	<author>kanenas.net (aka Nikolas Branis) - nbran@kanenas.net</author>	
+	<!-- Journal3 fix (start) -->
+	<file name="catalog/model/journal3/product.php">
+		<operation>
+			<search position="before"><![CDATA[public function getProducts($filter_data) {]]></search>
+			<add><![CDATA[
+	public function getProductCustomerGroupPrice($product_id, $usergroupid) {
+		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_to_customer_group_prices WHERE product_id = '" . (int)$product_id . "' AND customer_group_id = '" . (int)$usergroupid . "' ORDER BY  price");
+		return $query->row;
+	}
+			]]></add>
+		</operation>
+		<operation>
+			<search position="iafter"><![CDATA[AS discount,]]></search>
+			<add><![CDATA[
+				(SELECT price FROM " . DB_PREFIX . "product_to_customer_group_prices ptcgp WHERE ptcgp.product_id = p.product_id AND ptcgp.customer_group_id = '" . (int)$this->config->get('config_customer_group_id') . "') AS cgprice,
+			]]></add>
+		</operation>
+		<operation>
+			<search position="before"><![CDATA['viewed'           => $row['viewed'],]]></search>
+			<add><![CDATA[
+		 		'cgprice'          => $row['cgprice'],
+			]]></add>
+		</operation>
+	</file>
+	<!-- Journal3 fix (end) -->
+</modification>
