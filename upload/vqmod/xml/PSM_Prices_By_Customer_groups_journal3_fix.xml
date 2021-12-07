@@ -32,5 +32,41 @@
 			]]></add>
 		</operation>
 	</file>
+	<file name="catalog/controller/journal3/products.php">
+		<operation>
+			<search position="before" index="1"><![CDATA[if ($this->customer->isLogged() || !$this->config->get('config_customer_price')) {]]></search>
+			<add><![CDATA[
+			if ($this->config->get('config_enable_admin_product_customer_group_prices')){
+				if (!$this->customer->getGroupId()){
+					$cgid = $this->config->get('config_customer_group_id');
+				} else {
+					$cgid = $this->customer->getGroupId();
+				}
+				$this->load->model('catalog/product');
+				$cgprice = $this->model_catalog_product->getProductCustomerGroupPrice($result['product_id'], $cgid);
+			}
+			]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[$price = $this->currency->format($this->tax->calculate($result['price'], $result['tax_class_id'], $this->config->get('config_tax')), $this->session->data['currency']);]]></search>
+			<add><![CDATA[
+				if ($this->config->get('config_enable_admin_product_customer_group_prices')){
+					$price = $this->currency->format($this->tax->calculate($cgprice['price'], $result['tax_class_id'], $this->config->get('config_tax')), $this->session->data['currency']);
+				} else {
+					$price = $this->currency->format($this->tax->calculate($result['price'], $result['tax_class_id'], $this->config->get('config_tax')), $this->session->data['currency']);
+				}
+			]]></add>
+		</operation>
+		<operation>
+			<search position="replace"><![CDATA[$tax = $this->currency->format((float)$result['special'] ? $result['special'] : $result['price'], $this->session->data['currency']);]]></search>
+			<add><![CDATA[
+				if ($this->config->get('config_enable_admin_product_customer_group_prices')){
+					$tax = $this->currency->format((float)$result['special'] ? $result['special'] : $result['cgprice'], $this->session->data['currency']);
+				} else {
+					$tax = $this->currency->format((float)$result['special'] ? $result['special'] : $result['price'], $this->session->data['currency']);
+				}
+			]]></add>
+		</operation>
+	</file>
 	<!-- Journal3 fix (end) -->
 </modification>
